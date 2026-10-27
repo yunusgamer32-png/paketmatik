@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paketmatik SaaS - Kesin Çalışan Tam Sürüm</title>
+    <style>
+        body { background-color: #121212; color: #e0e0e0; font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 650px; margin: 0 auto; background: #1e1e1e; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        h2 { color: #ff9800; text-align: center; }
+        .card { background: #2d2d2d; padding: 15px; margin-bottom: 15px; border-radius: 8px; }
+        select, input { width: 100%; padding: 10px; background: #383838; color: #fff; border: 1px solid #555; border-radius: 5px; margin-bottom: 10px; box-sizing: border-box; }
+        button { background-color: #ff9800; color: #fff; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
+        button:hover { background-color: #e68900; }
+        .btn-green { background-color: #4CAF50; }
+        .btn-blue { background-color: #2196F3; font-size: 12px; padding: 6px 10px; width: auto; display: inline-block; margin-right: 5px; margin-top: 5px; }
+        .btn-red { background-color: #f44336; font-size: 12px; padding: 6px 10px; width: auto; display: inline-block; margin-top: 5px; }
+        .btn-kurye-ara { background-color: #009688; color: #fff; text-decoration: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; display: inline-block; margin-top: 5px; }
+        .info { font-size: 14px; color: #b0b0b0; }
+        .siparis-item { background: #383838; padding: 12px; margin-top: 10px; border-radius: 5px; font-size: 13px; border-left: 4px solid #ff9800; }
+        .hidden { display: none; }
+        .user-badge { background: #333; padding: 10px; border-radius: 5px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .fis-img { max-width: 100%; height: 160px; border-radius: 5px; margin-top: 8px; object-fit: cover; border: 1px solid #555; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>📦 Paketmatik SaaS</h2>
+
+        <!-- GİRİŞ & KAYIT -->
+        <div id="authEkrani">
+            <div class="card">
+                <h3>🔑 Güvenli Giriş</h3>
+                <input type="text" id="girisTel" placeholder="Telefon Numarası">
+                <input type="password" id="girisSifre" placeholder="Şifreniz">
+                <button class="btn-green" onclick="girisYap()">Giriş Yap</button>
+            </div>
+            <div class="card">
+                <h3>📝 Yeni Üyelik</h3>
+                <input type="text" id="kayitAd" placeholder="Adınız / Restoran Adı">
+                <input type="text" id="kayitTel" placeholder="Telefon Numaranız">
+                <input type="password" id="kayitSifre" placeholder="Şifre Belirleyin">
+                <select id="kayitRol" onchange="rolDegisti()">
+                    <option value="yonetici">👔 Şirket / Yönetici</option>
+                    <option value="kurye">🚴 Kurye</option>
+                    <option value="restoran">🍽️ Restoran / İşletme</option>
+                </select>
+                <div id="kodAlan" class="hidden">
+                    <input type="text" id="kayitKod" placeholder="Şirket Kodu (Örn: 123456)">
+                </div>
+                <button onclick="kayitOl()">Kayıt Ol</button>
+            </div>
+        </div>
+
+        <!-- ANA UYGULAMA -->
+        <div id="anaUygulama" class="hidden">
+            <div class="user-badge">
+                <div>
+                    <span id="kullaniciBilgi" style="font-weight: bold; color: #ff9800;"></span><br>
+                    <small id="kullaniciRol" style="color: #aaa;"></small>
+                </div>
+                <button style="width: auto; padding: 5px 10px; background: #d32f2f;" onclick="cikisYap()">Çıkış</button>
+            </div>
+
+            <!-- SÜPER ADMIN PANELİ -->
+            <div id="superAdminPanel" class="hidden">
+                <div class="card" style="background: #3b1414; border: 1px solid #f44336;">
+                    <h3 style="color: #f44336;">🛠️ Süper Admin Jeton Dağıtım Paneli</h3>
+                    <input type="text" id="adminHedefTel" placeholder="Yönetici Telefon Numarası">
+                    <input type="number" id="adminJetonMik" placeholder="Yüklenecek Jeton" value="50">
+                    <button class="btn-green" onclick="adminJetonYukle()">Yöneticiye Jeton Yükle</button>
+                </div>
+            </div>
+
+            <!-- YÖNETİCİ PANELİ -->
+            <div id="yoneticiPanel" class="hidden">
+                <div class="card" style="background: #1a2738;">
+                    <h3 style="color: #2196F3;">📊 Şirket Bilgileri & Jeton Durumu</h3>
+                    <p class="info">Şirket Kodunuz: <b id="sirketKodYazisi" style="color: #ff9800;"></b></p>
+                    <p class="info">Jeton Bakiyesi: <span id="jetonMiktari" style="color: #4CAF50; font-weight: bold;">0</span></p>
+                </div>
+                <div class="card">
+                    <h3>👥 Personel (Kurye) Ekle</h3>
+                    <input type="text" id="pAd" placeholder="Kurye Adı">
+                    <input type="text" id="pTel" placeholder="Kurye Telefonu">
+                    <input type="password" id="pSifre" placeholder="Kurye Şifresi">
+                    <button class="btn-green" onclick="kuryeEkle()">Kuryeyi Kaydet</button>
+                </div>
+            </div>
+
+            <!-- RESTORAN PANELİ -->
+            <div id="restoranPanel" class="hidden">
+                <div class="card" style="background: #1a2738;">
+                    <h3 style="color: #2196F3;">🍽️ Restoran Fiş & Sipariş Paneli</h3>
+                    <p class="info">İşletme: <b id="restoranAdiYazi" style="color: #fff;"></b> | Bugün Çıkan: <b id="restoranSayac" style="color: #4CAF50;">0</b></p>
+                    <input type="text" id="resMusteri" placeholder="Müşteri Adı">
+                    <input type="text" id="resAdres" placeholder="Teslimat Adresi (Navigasyon için)">
+                    
+                    <label class="info" style="margin-top: 5px; display:block;">📸 Fişin Fotoğrafını Çek / Yükle:</label>
+                    <input type="file" id="fisDosya" accept="image/*" capture="environment" style="margin-top: 5px; margin-bottom: 10px;">
+
+                    <button class="btn-green" onclick="restoranSiparisEkle()">🔔 Siparişi Havuza Düşür</button>
+                </div>
+            </div>
+
+            <!-- KURYE PANELİ -->
+            <div id="kuryePanel" class="hidden">
+                <div class="card" style="background: #1b381a;">
+                    <h3 style="color: #4CAF50;">🎯 Kurye Saha Paneli</h3>
+                    <p class="info">Bugün Tamamlanan: <span id="kuryeSayac" style="font-weight: bold; color: #fff;">0</span></p>
+                </div>
+            </div>
+
+            <!-- RAPORLAMA & FİLTRELEME -->
+            <div class="card">
+                <h3>📦 Şirket Sipariş Havuzu & Raporlama</h3>
+                <label class="info">📅 Tarihe Göre Filtrele (GG.AA.YYYY):</label>
+                <input type="text" id="tarihFiltre" placeholder="Boş bırakırsanız hepsi görünür" oninput="veriGuncelle()" style="margin-bottom: 10px;">
+                <div id="siparisListesi">Aktif sipariş bulunmuyor.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let aktifKullanici = null;
+
+        document.addEventListener("DOMContentLoaded", function() {
+            let kullanicilar = JSON.parse(localStorage.getItem('kullanicilar')) || [];
+            let superAdminVar = kullanicilar.some(k => k.telefon === "1" && k.rol === "superadmin");
+            if (!superAdminVar) {
+                const superAdmin = { ad: "Süper Patron", telefon: "1", sifre: "1", rol: "superadmin", sirketKodu: null, jeton: 9999 };
+                kullanicilar.push(superAdmin);
+                localStorage.setItem('kullanicilar', JSON.stringify(kullanicilar));
+            }
+            if (!localStorage.getItem('siparisler')) {
+                localStorage.setItem('siparisler', JSON.stringify([]));
+            }
+
+            const kayitliOturum = localStorage.getItem('aktifKullanici');
+            if (kayitliOturum && kayitliOturum !== "undefined" && kayitliOturum !== "null") {
+                try {
+                    aktifKullanici = JSON.parse(kayitliOturum);
+                    if (aktifKullanici && aktifKullanici.rol) {
+                        ekraniAyarla();
+                    }
+                } catch (e) {
+                    localStorage.removeItem('aktifKullanici');
+                }
+            }
+        });
+
+        function rolDegisti() {
+            const rol = document.getElementById('kayitRol').value;
+            document.getElementById('kodAlan').classList.toggle('hidden', rol === 'yonetici');
+        }
+
+        function kayitOl() {
+            const ad = document.getElementById('kayitAd').value.trim();
+            const telefon = document.getElementById('kayitTel').value.trim();
+            const sifre = document.getElementById('kayitSifre').value.trim();
+            const rol = document.getElementById('kayitRol').value;
+            const sirketKoduInput = document.getElementById('kayitKod').value.trim();
+
+            if (!ad || !telefon || !sifre) {
+                alert("Lütfen tüm alanları doldurun!");
+                return;
+            }
+
+            let kullanicilar = JSON.parse(localStorage.getItem('kullanicilar')) || [];
+            if (kullanicilar.some(k => k.telefon === telefon)) {
+                alert("Bu telefon numarası zaten kayıtlı!");
+                return;
+            }
+
+            let sirketKodu = null;
+            let jeton = 0;
+            if (rol === 'yonetici') {
+                sirketKodu = Math.floor(100000 + Math.random() * 900000).toString();
+                jeton = 5;
+            } else {
+                if (!sirketKoduInput) {
+                    alert("Lütfen şirket kodunu girin!");
+                    return;
+                }
+                const yoneticiVar = kullanicilar.some(k => k.rol === 'yonetici' && k.sirketKodu === sirketKoduInput);
+                if (!yoneticiVar) {
+                    alert("Geçersiz Şirket Kodu!");
+                    return;
+                }
+                sirketKodu = sirketKoduInput;
+            }
+
+            const yeniKullanici = { ad, telefon, sifre, rol, sirketKodu, jeton };
+            kullanicilar.push(yeniKullanici);
+            localStorage.setItem('kullanicilar', JSON.stringify(kullanicilar));
+
+            alert(sirketKodu ? `Kayıt Başarılı! Şirket Kodunuz: ${sirketKodu}` : "Kayıt Başarılı!");
+            document.getElementById('kayitAd').value = "";
+            document.getElementById('kayitTel').value = "";
+            document.getElementById('kayitSifre').value = "";
+            document.getElementById('kayitKod').value = "";
+        }
+
+        function girisYap() {
+            const telefon = document.getElementById('girisTel').value.trim();
+            const sifre = document.getElementById('girisSifre').value.trim();
+
+            if (!telefon || !sifre) {
+                alert("Lütfen telefon ve şifrenizi girin!");
+                return;
+            }
+
+            let kullanicilar = JSON.parse(localStorage.getItem('kullanicilar')) || [];
+            const bulunan = kullanicilar.find(k => k.telefon === telefon && k.sifre === sifre);
+
+            if (!bulunan) {
+                alert("Telefon numarası veya şifre hatalı!");
+                return;
+            }
+
+            aktifKullanici = bulunan;
+            localStorage.setItem('aktifKullanici', JSON.stringify(aktifKullanici));
+            ekraniAyarla();
+        }
+
+        function cikisYap() {
+            aktifKullanici = null;
+            localStorage.removeItem('aktifKullanici');
+            document.getElementById('authEkrani').classList.remove('hidden');
+            document.getElementById('anaUygulama').classList.add('hidden');
+        }
+
+        function ekraniAyarla() {
+            document.getElementById('authEkrani').classList.add('hidden');
+            document.getElementById('anaUygulama').classList.remove('hidden');
+            document.getElementById('kullaniciBilgi').innerText = `${aktifKullanici.ad} (${aktifKullanici.telefon})`;
+            document.getElementById('kullaniciRol').innerText = `Rol: ${aktifKullanici.rol.toUpperCase()}`;
+
+            document.getElementById('superAdminPanel').classList.toggle('hidden', aktifKullanici.rol !== 'superadmin');
+            document.getElementById('yoneticiPanel').classList.toggle('hidden', aktifKullanici.rol !== 'yonetici');
+            document.getElementById('restoranPanel').classList.toggle('hidden', aktifKullanici.rol !== 'restoran');
+            document.getElementById('kuryePanel').classList.toggle('hidden', aktifKullanici.rol !== 'kurye');
+
+            if (aktifKullanici.rol === 'yonetici') {
+                document.getElementById('sirketKodYazisi').innerText = aktifKullanici.sirketKodu;
+                document.getElementById('jetonMiktari').innerText = aktifKullanici.jeton || 0;
+            }
+
+            if (aktifKullanici.rol === 'restoran') {
+                document.getElementById('restoranAdiYazi').innerText = aktifKullanici.ad;
+            }
+
+            if (aktifKullanici.rol !== 'superadmin') {
+                veriGuncelle();
+            }
+        }
+
+        function adminJetonYukle() {
+            const hedefTel = document.getElementById('adminHedefTel').value.trim();
+            const miktar = parseInt(document.getElementById('adminJetonMik').value) || 0;
+
+            if (!hedefTel || miktar <= 0) {
+                alert("Lütfen yönetici telefonunu ve geçerli bir miktar girin!");
+                return;
+            }
+
+            let kullanicilar = JSON.parse(localStorage.getItem('kullanicilar')) || [];
+            let yonetici = kullanicilar.find(k => k.telefon === hedefTel && k.rol === 'yonetici');
+
+            if (!yonetici) {
+                alert("Bu telefon numarasına sahip bir yönetici bulunamadı!");
+                return;
+            }
+
+            yonetici.jeton = (yonetici.jeton || 0) + miktar;
+            localStorage.setItem('kullanicilar', JSON.stringify(kullanicilar));
+            alert(`✅ ${yonetici.ad} adlı yöneticiye ${miktar} jeton yüklendi!`);
+            document.getElementById('adminHedefTel').value = "";
+        }
+
+        function veriGuncelle() {
+            if (!aktifKullanici || aktifKullanici.rol === 'superadmin') return;
+
+            if (aktifKullanici.rol === 'yonetici') {
+                let kullanicilar = JSON.parse(localStorage.getItem('kullanicilar')) || [];
+                let yonetici = kullanicilar.find(k => k.telefon === aktifKullanici.telefon);
+                if (yonetici) {
+                    aktifKullanici.jeton = yonetici.jeton || 0;
+                    document.getElementById('jetonMiktari').innerText = aktifKullanici.jeton;
+                }
+            }
+
+            let siparisler = JSON.parse(localStorage.getItem('siparisler')) || [];
+            let sirketSiparisleri = siparisler.filter(s => s.sirketKodu === aktifKullanici.sirketKodu);
+            let kuryeler = JSON.parse(localStorage.getItem('kullanicilar')) || [];
+            let sirketKuryeleri = kuryeler.filter(k => k.rol === 'kurye' && k.sirketKodu === aktifKullanici.sirketKodu);
+
+            let teslimSayisi = 0;
+            let restoranSayisi = 0;
+            const filtreTarih = document.getElementById('tarihFiltre').value.trim();
+            const listeDiv = document.getElementById('siparisListesi');
+
+            let filtrelenmisListe = sirketSiparisleri.filter(s => {
+                if (filtreTarih && s.tarih !== filtreTarih) return false;
+                return true;
+            });
+
+            if (filtrelenmisListe.length === 0) {
+                listeDiv.innerHTML = "Sipariş bulunmuyor.";
+            } else {
+                listeDiv.innerHTML = "";
+                filtrelenmisListe.forEach(s => {
+                    if (s.kuryeTel === aktifKullanici.telefon && s.durum === "Teslim Edildi") teslimSayisi++;
+                    if (s.restoranAdi === aktifKullanici.ad && s.durum === "Teslim Edildi") restoranSayisi++;
+
+                    let fisBolumu = s.fisGorseli ? `<br><b>📸 Fiş Fotoğrafı:</b><br><img src="${s.fisGorseli}" class="fis-img">` : "";
+                    let adresBolumu = s.adres ? `<br>📍 Adres: <b>${s.adres}</b>` : "";
+
+                    let kuryeBilgiPaneli = "";
+                    if (s.kuryeTel && s.kuryeAd) {
+                        kuryeBilgiPaneli = `<div style="margin: 5px 0; font-size: 12px; color: #4CAF50;">🚴 Atanan Kurye: <b>${s.kuryeAd}</b> <a href="tel:${s.kuryeTel}" class="btn-kurye-ara">📞 Kuryeyi Ara</a></div>`;
+                    }
+
+                    let aksiyonlar = "";
+                    if (s.durum === "Havuzda") {
+                        if (aktifKullanici.rol === 'kurye') {
+                            aksiyonlar = `<button class="btn-green" onclick="siparisIslem(${s.id}, 'al')">🚴 Siparişi Al (Kabul Et)</button>`;
+                        } else if (aktifKullanici.rol === 'yonetici') {
+                            let kuryeSecenekleri = sirketKuryeleri.map(k => `<option value="${k.telefon}|${k.ad}">${k.ad}</option>`).join('');
+                            aksiyonlar = `
+                                <div style="margin-top:5px; display:flex; gap:5px; flex-direction:column;">
+                                    <button class="btn-green" onclick="siparisIslem(${s.id}, 'yoneticiAl')" style="margin-top:0;">✋ Siparişi Kendim Al</button>
+                                    <div style="display:flex; gap:5px;">
+                                        <select id="ataKurye_${s.id}"><option value="">-- Kurye Seç --</option>${kuryeSecenekleri}</select>
+                                        <button class="btn-blue" onclick="yoneticiKuryeyeAta(${s.id})" style="margin-top:0;">Kuryeye Ata</button>
+                                    </div>
+                                </div>`;
+                        } else {
+                            aksiyonlar = `<i>Kurye bekleniyor...</i>`;
+                        }
+                    } else if (s.durum === "Kabul Edildi" || s.durum === "Yolda") {
+                        let haritaButonu = s.adres ? `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.adres)}" target="_blank" style="background:#00bcd4; color:#fff; padding:6px 10px; border-radius:4px; font-size:12px; text-decoration:none; display:inline-block; margin-top:5px;">🗺️ Haritada Aç</a>` : "";
+                        
+                        if (s.kuryeTel === aktifKullanici.telefon || aktifKullanici.rol === 'yonetici') {
+                            aksiyonlar = `
+                                <button class="btn-blue" onclick="siparisIslem(${s.id}, 'yolaCikar')">🚀 Yola Çıkar</button>
+                                <button class="btn-green" onclick="siparisIslem(${s.id}, 'teslimEt')">✅ Teslim Et</button>
+                                <button class="btn-red" onclick="siparisIslem(${s.id}, 'havuzaAktar')">🔄 Havuza Geri Aktar</button><br>
+                                ${haritaButonu}
+                            `;
+                        } else {
+                            aksiyonlar = `<i>Bu sipariş kuryede: <b>${s.kuryeAd}</b></i>`;
+                        }
+                    } else if (s.durum === "Teslim Edildi") {
+                        aksiyonlar = `<b style="color: #4CAF50;">✅ Teslim Edildi (Tarih: ${s.tarih})</b>`;
+                    }
+
+                    listeDiv.innerHTML += `
+                        <div class="siparis-item">
+                            <span style="color: #ff9800; font-weight: bold;">🏠 ${s.restoranAdi}</span> <span style="font-size:11px; color:#aaa;">(${s.tarih})</span><br>
+                            <strong>Sipariş #${s.id}</strong> - Müşteri: ${s.musteriAdi}
+                            ${adresBolumu}
+                            ${kuryeBilgiPaneli}
+                            ${fisBolumu}<br>
+                            Durum: <b style="color: #ff9800;">${s.durum}</b>
+                            <div style="margin-top: 8px;">${aksiyonlar}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            if (aktifKullanici.rol === 'kurye') document.getElementById('kuryeSayac').innerText = teslimSayisi;
+            if (aktifKullanici.rol === 'restoran') document.getElementById('restoranSayac').innerText = restoranSayisi;
+        }
+
+        function restoranSiparisEkle() {
+            const musteriAdi = document.getElementById('resMusteri').value.trim() || "Fişli Sipariş";
+            const adres = document.getElementById('resAdres').value.trim() || "";
+            const dosyaInput = document.getElementById('fisDosya');
+
+            const simdi = new Date();
+            const tarihStr = String(simdi.getDate()).padStart(2, '0') + '.' + String(simdi.getMonth() + 1).padStart(2, '0') + '.' + simdi.getFullYear();
+
+            if (dosyaInput.files && dosyaInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    siparihiKaydet(musteriAdi, adres, e.target.result, tarihStr);
+                };
+                reader.readAsDataURL(dosyaInput.files[0]);
+            } else {
+                siparihiKaydet(musteriAdi, adres, null, tarihStr);
+            }
+        }
+
+        function siparihiKaydet(musteriAdi, adres, fisGorseli, tarihStr) {
+            let siparisler = JSON.parse(localStorage.getItem('siparisler')) || [];
+
+            const yeniSiparis = {
+                id: Date.now(),
+                restoranAdi: aktifKullanici.ad,
+                sirketKodu: aktifKullanici.sirketKodu,
+                musteriAdi: musteriAdi,
+                adres: adres,
+                fisGorseli: fisGorseli,
+                tarih: tarihStr,
+                durum: "Havuzda",
+                kuryeTel: null,
+                kuryeAd: null
+            };
+
+            siparisler.push(yeniSiparis);
+            localStorage.setItem('siparisler', JSON.stringify(siparisler));
+
+            document.getElementById('resMusteri').value = "";
+            document.getElementById('resAdres').value = "";
+            document.getElementById('fisDosya').value = "";
+            alert("✅ Sipariş havuza eklendi!");
+            veriGuncelle();
+        }
+
+        function jetonDus() {
+            let kullanicilar = JSON.parse(localStorage.getItem('kullanicilar')) || [];
+            let yonetici = kullanicilar.find(k => k.sirketKodu === aktifKullanici.sirketKodu && k.rol === 'yonetici');
+            if (!yonetici || (yonetici.jeton || 0) <= 0) {
+                alert("⚠️ Şirketin jeton bakiyesi tükendi! Lütfen yönetici panelinden jeton yükleyin.");
+                return false;
+            }
+            yonetici.jeton -= 1;
+            localStorage.setItem('kullanicilar', JSON.stringify(kullanicilar));
+            if (aktifKullanici.rol === 'yonetici') {
+                aktifKullanici.jeton = yonetici.jeton;
+                localStorage.setItem('aktifKullanici', JSON.stringify(aktifKullanici));
+            }
+            return true;
+        }
+
+        function siparisIslem(id, islem) {
+            let siparisler = JSON.parse(localStorage.getItem('siparisler')) || [];
+            let s = siparisler.find(item => item.id === id);
+            if (!s) return;
+
+            if (islem === 'al' || islem === 'yoneticiAl') {
+                if (!jetonDus()) return;
+                s.durum = "Kabul Edildi";
+                s.kuryeTel = aktifKullanici.telefon;
+                s.kuryeAd = islem === 'yoneticiAl' ? aktifKullanici.ad + " (Yönetici)" : aktifKullanici.ad;
+            } else if (islem === 'yolaCikar') {
+                s.durum = "Yolda";
+            } else if (islem === 'teslimEt') {
+                s.durum = "Teslim Edildi";
+            } else if (islem === 'havuzaAktar') {
+                s.durum = "Havuzda";
+                s.kuryeTel = null;
+                s.kuryeAd = null;
+            }
+
+            localStorage.setItem('siparisler', JSON.stringify(siparisler));
+            veriGuncelle();
+        }
+
+        function yoneticiKuryeyeAta(id) {
+            const selectEl = document.getElementById(`ataKurye_${id}`);
+            if (!selectEl || !selectEl.value) return alert("Lütfen atanacak kuryeyi seçin!");
+
+            const [kuryeTel, kuryeAd] = selectEl.value.split('|');
+            if (!jetonDus()) return;
+
+            let siparisler = JSON.parse(localStorage.getItem('siparisler')) || [];
+            let s = siparisler.find(item => item.id === id);
+            if (!s) return;
+
+            s.durum = "Kabul Edildi";
+            s.kuryeTel = kuryeTel;
+            s.kuryeAd = kuryeAd;
+
+            localStorage.setItem('siparisler', JSON.stringify(siparisler));
+            alert(`✅ Sipariş ${kuryeAd} adlı kuryeye atandı!`);
+            veriGuncelle();
+        }
+
+        function kuryeEkle() {
+            const ad = document.getElementById('pAd').value.trim();
+            const telefon = document.getElementById('pTel').value.trim();
+            const sifre = document.getElementById('pSifre').value.trim();
+
+            if (!ad || !telefon || !sifre) {
+                alert("Tüm alanları doldurun!");
+                return;
+            }
+
+            let kullanicilar = JSON.parse(localStorage.getItem('kullanicilar')) || [];
+            if (kullanicilar.some(k => k.telefon === telefon)) {
+                alert("Bu telefon numarası kayıtlı!");
+                return;
+            }
+
+            kullanicilar.push({ ad, telefon, sifre, rol: 'kurye', sirketKodu: aktifKullanici.sirketKodu });
+            localStorage.setItem('kullanicilar', JSON.stringify(kullanicilar));
+
+            alert("✅ Kurye eklendi!");
+            document.getElementById('pAd').value = "";
+            document.getElementById('pTel').value = "";
+            document.getElementById('pSifre').value = "";
+        }
+    </script>
+</body>
+</html>
